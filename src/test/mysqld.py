@@ -214,7 +214,7 @@ class Mysqld(object):
         try:
             with open(os.path.join(self.base_dir, 'tmp', 'mysqld.log')) as log:
                 return log.read()
-        except Exception, exc:
+        except Exception as exc:
             raise RuntimeError("failed to open file:tmp/mysqld.log: %r" % exc)
 
 
