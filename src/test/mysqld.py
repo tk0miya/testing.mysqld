@@ -119,8 +119,8 @@ class Mysqld(object):
         logger = open(os.path.join(self.base_dir, 'tmp', 'mysqld.log'), 'wt')
         pid = os.fork()
         if pid == 0:
-            os.dup2(logger.fileno(), sys.stdout.fileno())
-            os.dup2(logger.fileno(), sys.stderr.fileno())
+            os.dup2(logger.fileno(), sys.__stdout__.fileno())
+            os.dup2(logger.fileno(), sys.__stderr__.fileno())
 
             try:
                 os.execl(self.mysqld, self.mysqld,
