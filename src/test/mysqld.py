@@ -237,7 +237,7 @@ def find_program(name, subdirs):
 
 
 def get_path_of(name):
-    path = subprocess.Popen(['which', name], stdout=subprocess.PIPE).communicate()[0]
+    path = subprocess.Popen(['which', name], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     if path:
         return path.rstrip()
     else:
