@@ -165,14 +165,6 @@ class Mysqld(object):
             pass
 
     def setup(self):
-        # (re)create directory structure
-        for subdir in ['etc', 'var', 'tmp']:
-            try:
-                path = os.path.join(self.base_dir, subdir)
-                os.makedirs(path)
-            except:
-                pass
-
         # copy data files
         if self.copy_data_from:
             try:
@@ -180,6 +172,14 @@ class Mysqld(object):
             except Exception as exc:
                 raise RuntimeError("could not copytree %s to %s: %r" %
                                    (self.copy_data_from, self.my_cnf['datadir'], exc))
+
+        # (re)create directory structure
+        for subdir in ['etc', 'var', 'tmp']:
+            try:
+                path = os.path.join(self.base_dir, subdir)
+                os.makedirs(path)
+            except:
+                pass
 
         # my.cnf
         with open(os.path.join(self.base_dir, 'etc', 'my.cnf'), 'wt') as my_cnf:
