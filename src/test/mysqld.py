@@ -17,7 +17,7 @@ import os
 import re
 import sys
 import signal
-import MySQLdb
+import pymysql
 import tempfile
 import subprocess
 from time import sleep
@@ -140,7 +140,7 @@ class Mysqld(object):
             self.pid = pid
 
             # create test database
-            conn = MySQLdb.connect(**self.dsn())
+            conn = pymysql.connect(**self.dsn())
             conn.query('CREATE DATABASE IF NOT EXISTS test')
             conn.close()
 

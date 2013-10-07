@@ -6,7 +6,7 @@ import signal
 import unittest
 import test.mysqld
 from time import sleep
-import MySQLdb
+import pymysql
 
 
 class TestMysqld(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestMysqld(unittest.TestCase):
                               db='test'))
 
         # connect to mysql
-        conn = MySQLdb.connect(**mysqld.dsn())
+        conn = pymysql.connect(**mysqld.dsn())
         self.assertIsNotNone(conn)
         self.assertRegexpMatches(mysqld.read_log(), 'ready for connections')
 
@@ -43,7 +43,7 @@ class TestMysqld(unittest.TestCase):
             self.assertIsNotNone(mysqld)
 
             # connect to mysql
-            conn = MySQLdb.connect(**mysqld.dsn())
+            conn = pymysql.connect(**mysqld.dsn())
             self.assertIsNotNone(conn)
 
             pid = mysqld.pid
@@ -88,7 +88,7 @@ class TestMysqld(unittest.TestCase):
                                     copy_data_from=data_dir)
 
         # connect to mysql
-        conn = MySQLdb.connect(**mysqld.dsn())
+        conn = pymysql.connect(**mysqld.dsn())
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM test.hello ORDER BY id')
 

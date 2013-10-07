@@ -30,7 +30,7 @@ setup(
      package_data = {'': ['buildout.cfg']},
      include_package_data=True,
      install_requires=[
-         'MySQL-python',
+         'pymysql',
      ],
      extras_require=dict(
          test=[
