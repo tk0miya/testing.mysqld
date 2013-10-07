@@ -15,7 +15,7 @@ classifiers = [
 
 
 setup(
-     name='test.mysql',
+     name='test.mysqld',
      version='0.1.0',
      description='automatically setups a mysqld instance in a temporary directory, and destroys it after testing',
      long_description='',
