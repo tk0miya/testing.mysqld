@@ -82,6 +82,19 @@ class TestMysqld(unittest.TestCase):
             self.assertTrue(mysqld.pid)
             os.kill(mysqld.pid, 0)  # process is alive (delete mysqld obj in child does not effect)
 
+    def test_stop_on_child_process(self):
+        mysqld = test.mysqld.Mysqld(my_cnf={'skip-networking': None})
+        if os.fork() == 0:
+            mysqld.stop()
+            self.assertTrue(mysqld.pid)
+            os.kill(mysqld.pid, 0)  # process is alive (calling stop() is ignored)
+            os.kill(os.getpid(), signal.SIGTERM)  # exit tests FORCELY
+        else:
+            os.wait()
+            sleep(1)
+            self.assertTrue(mysqld.pid)
+            os.kill(mysqld.pid, 0)  # process is alive (calling stop() in child is ignored)
+
     def test_copy_data_from(self):
         data_dir = os.path.join(os.path.dirname(__file__), 'copy-data-from')
         mysqld = test.mysqld.Mysqld(my_cnf={'skip-networking': None},
