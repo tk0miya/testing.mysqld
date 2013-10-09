@@ -34,8 +34,8 @@ setup(
      ],
      extras_require=dict(
          test=[
-             'Nose',
-             'pep8',
+             'flake8',
+             'nose',
          ],
      ),
      test_suite='nose.collector',
