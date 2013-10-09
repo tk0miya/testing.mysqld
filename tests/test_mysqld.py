@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import signal
 import unittest
 import test.mysqld
@@ -75,6 +74,7 @@ class TestMysqld(unittest.TestCase):
         mysqld = test.mysqld.Mysqld(my_cnf={'skip-networking': None})
         if os.fork() == 0:
             del mysqld
+            mysqld = None
             os.kill(os.getpid(), signal.SIGTERM)  # exit tests FORCELY
         else:
             os.wait()

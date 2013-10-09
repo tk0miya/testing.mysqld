@@ -15,28 +15,28 @@ classifiers = [
 
 
 setup(
-     name='test.mysqld',
-     version='0.1.0',
-     description='automatically setups a mysqld instance in a temporary directory, and destroys it after testing',
-     long_description='',
-     classifiers=classifiers,
-     keywords=[],
-     author='Takeshi Komiya',
-     author_email='i.tkomiya at gmail.com',
-     url='http://bitbucket.org/tk0miya/test.mysql',
-     license='Apache License 2.0',
-     packages=find_packages('src'),
-     package_dir={'': 'src'},
-     package_data = {'': ['buildout.cfg']},
-     include_package_data=True,
-     install_requires=[
-         'pymysql',
-     ],
-     extras_require=dict(
-         test=[
-             'flake8',
-             'nose',
-         ],
-     ),
-     test_suite='nose.collector',
+    name='test.mysqld',
+    version='0.1.0',
+    description='automatically setups a mysqld instance in a temporary directory, and destroys it after testing',
+    long_description='',
+    classifiers=classifiers,
+    keywords=[],
+    author='Takeshi Komiya',
+    author_email='i.tkomiya at gmail.com',
+    url='http://bitbucket.org/tk0miya/test.mysql',
+    license='Apache License 2.0',
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    package_data={'': ['buildout.cfg']},
+    include_package_data=True,
+    install_requires=[
+        'pymysql',
+    ],
+    extras_require=dict(
+        test=[
+            'flake8',
+            'nose',
+        ],
+    ),
+    test_suite='nose.collector',
 )
