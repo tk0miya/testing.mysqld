@@ -105,4 +105,4 @@ class TestMysqld(unittest.TestCase):
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM test.hello ORDER BY id')
 
-        self.assertEqual(cursor.fetchall(), [(1, 'hello'), (2, 'ciao')])
+        self.assertEqual(cursor.fetchall(), ((1, 'hello'), (2, 'ciao')))
