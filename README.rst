@@ -26,9 +26,9 @@ Create MySQL instance using ``test.mysqld.Mysqld``::
 
 
 ``test.mysqld.Mysqld`` executes ``mysql_install_db`` and ``mysqld`` on instantiation.
-On deleteing Mysqld object, it terminates MySQL instance and removes temporary directory.
+On deleting Mysqld object, it terminates MySQL instance and removes temporary directory.
 
-If you want database includes tables and any fixtures for your apps,
+If you want a database including tables and any fixtures for your apps,
 use ``copy_data_from`` keyword::
 
   # uses a copy of specified data directory of MySQL.
