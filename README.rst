@@ -54,6 +54,7 @@ For example, you can setup new MySQL server for each testcases on setUp() method
 Requirements
 ============
 * Python 2.7, 3.3
+* pymysql
 
 License
 =======
