@@ -15,7 +15,7 @@ classifiers = [
 
 
 setup(
-    name='test.mysqld',
+    name='testing.mysqld',
     version='1.0.0',
     description='automatically setups a mysqld instance in a temporary directory, and destroys it after testing',
     long_description=open('README.rst').read(),
@@ -23,7 +23,7 @@ setup(
     keywords=[],
     author='Takeshi Komiya',
     author_email='i.tkomiya at gmail.com',
-    url='http://bitbucket.org/tk0miya/test.mysqld',
+    url='http://bitbucket.org/tk0miya/testing.mysqld',
     license='Apache License 2.0',
     packages=find_packages('src'),
     package_dir={'': 'src'},

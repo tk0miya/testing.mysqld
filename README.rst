@@ -1,20 +1,20 @@
-``test.mysqld`` automatically setups a mysqld instance in a temporary directory, and destroys it after testing
+``testing.mysqld`` automatically setups a mysqld instance in a temporary directory, and destroys it after testing
 
 Install
 =======
 Use easy_install (or pip)::
 
-   $ easy_install test.mysqld
+   $ easy_install testing.mysqld
 
-And ``test.mysqld`` requires MySQL server in your PATH.
+And ``testing.mysqld`` requires MySQL server in your PATH.
 
 
 Usage
 =====
-Create MySQL instance using ``test.mysqld.Mysqld``::
+Create MySQL instance using ``testing.mysqld.Mysqld``::
 
-  import test.mysqld
-  mysqld = test.mysqld.Mysqld()  # Lanuch new MySQL server
+  import testing.mysqld
+  mysqld = testing.mysqld.Mysqld()  # Lanuch new MySQL server
 
   import _mysql
   db = _mysql.connect(**mysqld.dsn())
@@ -25,30 +25,30 @@ Create MySQL instance using ``test.mysqld.Mysqld``::
   del mysqld                     # Terminate MySQL server
 
 
-``test.mysqld.Mysqld`` executes ``mysql_install_db`` and ``mysqld`` on instantiation.
+``testing.mysqld.Mysqld`` executes ``mysql_install_db`` and ``mysqld`` on instantiation.
 On deleting Mysqld object, it terminates MySQL instance and removes temporary directory.
 
 If you want a database including tables and any fixtures for your apps,
 use ``copy_data_from`` keyword::
 
   # uses a copy of specified data directory of MySQL.
-  mysqld = test.mysqld.Mysqld(copy_data_from='/path/to/your/database')
+  mysqld = testing.mysqld.Mysqld(copy_data_from='/path/to/your/database')
 
 
 You can specify parameters for MySQL with ``my_cnf`` keyword::
 
   # boot MySQL server without socket listener (use unix-domain socket) 
-  mysqld = test.mysqld.Mysqld(my_cnf={'skip-networking': None})
+  mysqld = testing.mysqld.Mysqld(my_cnf={'skip-networking': None})
 
 
 For example, you can setup new MySQL server for each testcases on setUp() method::
 
   import unittest
-  import test.mysqld
+  import testing.mysqld
 
   class MyTestCase(unittest.TestCase):
       def setUp(self):
-          self.mysqld = test.mysqld.Mysqld(my_cnf={'skip-networking': None})
+          self.mysqld = testing.mysqld.Mysqld(my_cnf={'skip-networking': None})
 
 
 Requirements
