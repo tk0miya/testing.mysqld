@@ -37,6 +37,18 @@ class TestMysqld(unittest.TestCase):
         with self.assertRaises(OSError):
             os.kill(pid, 0)  # process is down
 
+    def test_dsn_and_url(self):
+        mysqld = testing.mysqld.Mysqld(auto_start=0)
+        self.assertEqual({'db': 'test', 'unix_socket': mysqld.my_cnf['socket'], 'user': 'root'},
+                         mysqld.dsn())
+        self.assertEqual("mysql://root@localhost/test?unix_socket=%s" % mysqld.my_cnf['socket'],
+                         mysqld.url())
+
+        mysqld = testing.mysqld.Mysqld(my_cnf={'port': 12345}, auto_start=0)
+        self.assertEqual({'db': 'test', 'host': '127.0.0.1', 'port': 12345, 'user': 'root'},
+                         mysqld.dsn())
+        self.assertEqual("mysql://root@127.0.0.1:12345/test", mysqld.url())
+
     def test_with_mysql(self):
         with testing.mysqld.Mysqld(my_cnf={'skip-networking': None}) as mysqld:
             self.assertIsNotNone(mysqld)

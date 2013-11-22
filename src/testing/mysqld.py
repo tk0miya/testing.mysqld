@@ -114,6 +114,16 @@ class Mysqld(object):
 
         return params
 
+    def url(self, **kwargs):
+        params = self.dsn(**kwargs)
+
+        if 'port' in params:
+            return ('mysql://%s@%s:%d/%s' %
+                    (params['user'], params['host'], params['port'], params['db']))
+        else:
+            return ('mysql://%s@localhost/%s?unix_socket=%s' %
+                    (params['user'], params['db'], params['unix_socket']))
+
     def start(self):
         if self.pid:
             return  # already started

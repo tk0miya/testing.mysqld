@@ -16,8 +16,14 @@ Create MySQL instance using ``testing.mysqld.Mysqld``::
   import testing.mysqld
   mysqld = testing.mysqld.Mysqld()  # Lanuch new MySQL server
 
-  import _mysql
-  db = _mysql.connect(**mysqld.dsn())
+  # connect to MySQL
+  from sqlalchemy import create_engine
+  engine = create_engine(mysqld.url())
+
+  # if you use mysqldb or other drivers:
+  #   import _mysql
+  #   db = _mysql.connect(**mysqld.dsn())
+
   #
   # do any tests using MySQL...
   #
