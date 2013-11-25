@@ -118,11 +118,19 @@ class Mysqld(object):
         params = self.dsn(**kwargs)
 
         if 'port' in params:
-            return ('mysql://%s@%s:%d/%s' %
-                    (params['user'], params['host'], params['port'], params['db']))
+            url = ('mysql://%s@%s:%d/%s' %
+                   (params['user'], params['host'], params['port'], params['db']))
+
+            if 'charset' in params:
+                url += "?charset=%s" % params['charset']
         else:
-            return ('mysql://%s@localhost/%s?unix_socket=%s' %
-                    (params['user'], params['db'], params['unix_socket']))
+            url = ('mysql://%s@localhost/%s?unix_socket=%s' %
+                   (params['user'], params['db'], params['unix_socket']))
+
+            if 'charset' in params:
+                url += "&charset=%s" % params['charset']
+
+        return url
 
     def start(self):
         if self.pid:
