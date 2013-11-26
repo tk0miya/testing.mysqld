@@ -75,7 +75,7 @@ class TestMysqld(unittest.TestCase):
         os.kill(mysqld1.pid, 0)  # process is alive
         os.kill(mysqld2.pid, 0)  # process is alive
 
-    def testing(self):
+    def test_mysqld_is_not_found(self):
         try:
             path = os.environ['PATH']
             os.environ['PATH'] = '/usr/bin'
