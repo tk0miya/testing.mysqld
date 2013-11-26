@@ -84,11 +84,6 @@ class Mysqld(object):
             self.stop()
             self.cleanup()
 
-    def cleanup(self):
-        from shutil import rmtree
-        if self._use_tmpdir:
-            rmtree(self.base_dir)
-
     def __getattr__(self, name):
         if name in self.settings:
             return self.settings[name]
@@ -131,6 +126,52 @@ class Mysqld(object):
                 url += "&charset=%s" % params['charset']
 
         return url
+
+    def setup(self):
+        # copy data files
+        if self.copy_data_from:
+            try:
+                copytree(self.copy_data_from, self.my_cnf['datadir'])
+            except Exception as exc:
+                raise RuntimeError("could not copytree %s to %s: %r" %
+                                   (self.copy_data_from, self.my_cnf['datadir'], exc))
+
+        # (re)create directory structure
+        for subdir in ['etc', 'var', 'tmp']:
+            try:
+                path = os.path.join(self.base_dir, subdir)
+                os.makedirs(path)
+            except:
+                pass
+
+        # my.cnf
+        with open(os.path.join(self.base_dir, 'etc', 'my.cnf'), 'wt') as my_cnf:
+            my_cnf.write("[mysqld]\n")
+            for key, value in self.my_cnf.items():
+                if value:
+                    my_cnf.write("%s=%s\n" % (key, value))
+                else:
+                    my_cnf.write("%s\n" % key)
+
+        # mysql_install_db
+        if not os.path.exists(os.path.join(self.base_dir, 'var', 'mysql')):
+            args = []
+            args.append(self.mysql_install_db)
+
+            # We should specify --defaults-file option first.
+            args.append("--defaults-file=%s/etc/my.cnf" % self.base_dir)
+
+            mysql_base_dir = self.mysql_install_db
+            if os.path.islink(mysql_base_dir):
+                mysql_base_dir = os.path.abspath(os.readlink(mysql_base_dir))
+
+            if re.search('[^/]+/mysql_install_db$', mysql_base_dir):
+                args.append("--basedir=%s" % re.sub('[^/]+/mysql_install_db$', '', mysql_base_dir))
+
+            try:
+                subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+            except Exception as exc:
+                raise RuntimeError("failed to spawn mysql_install_db: %r" % exc)
 
     def start(self):
         if self.pid:
@@ -187,51 +228,10 @@ class Mysqld(object):
         except:
             pass
 
-    def setup(self):
-        # copy data files
-        if self.copy_data_from:
-            try:
-                copytree(self.copy_data_from, self.my_cnf['datadir'])
-            except Exception as exc:
-                raise RuntimeError("could not copytree %s to %s: %r" %
-                                   (self.copy_data_from, self.my_cnf['datadir'], exc))
-
-        # (re)create directory structure
-        for subdir in ['etc', 'var', 'tmp']:
-            try:
-                path = os.path.join(self.base_dir, subdir)
-                os.makedirs(path)
-            except:
-                pass
-
-        # my.cnf
-        with open(os.path.join(self.base_dir, 'etc', 'my.cnf'), 'wt') as my_cnf:
-            my_cnf.write("[mysqld]\n")
-            for key, value in self.my_cnf.items():
-                if value:
-                    my_cnf.write("%s=%s\n" % (key, value))
-                else:
-                    my_cnf.write("%s\n" % key)
-
-        # mysql_install_db
-        if not os.path.exists(os.path.join(self.base_dir, 'var', 'mysql')):
-            args = []
-            args.append(self.mysql_install_db)
-
-            # We should specify --defaults-file option first.
-            args.append("--defaults-file=%s/etc/my.cnf" % self.base_dir)
-
-            mysql_base_dir = self.mysql_install_db
-            if os.path.islink(mysql_base_dir):
-                mysql_base_dir = os.path.abspath(os.readlink(mysql_base_dir))
-
-            if re.search('[^/]+/mysql_install_db$', mysql_base_dir):
-                args.append("--basedir=%s" % re.sub('[^/]+/mysql_install_db$', '', mysql_base_dir))
-
-            try:
-                subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
-            except Exception as exc:
-                raise RuntimeError("failed to spawn mysql_install_db: %r" % exc)
+    def cleanup(self):
+        from shutil import rmtree
+        if self._use_tmpdir:
+            rmtree(self.base_dir)
 
     def read_log(self):
         try:
