@@ -230,7 +230,7 @@ class Mysqld(object):
 
     def cleanup(self):
         from shutil import rmtree
-        if self._use_tmpdir:
+        if self._use_tmpdir and os.path.exists(self.base_dir):
             rmtree(self.base_dir)
 
     def read_log(self):
