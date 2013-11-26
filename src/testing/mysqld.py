@@ -71,7 +71,7 @@ class Mysqld(object):
 
     def __del__(self):
         import os
-        if self.pid and self._owner_pid == os.getpid():
+        if self._owner_pid == os.getpid():
             self.stop()
             self.cleanup()
 
