@@ -70,6 +70,19 @@ Apache License 2.0
 History
 =======
 
+1.1.2 (2013-11-26)
+-------------------
+* Fix it does not cleanup temporary directory if Mysqld object has been deleted
+
+1.1.1 (2013-11-25)
+-------------------
+* Add charset parameter to Mysqld#url()
+
+1.1.0 (2013-11-22)
+-------------------
+* Rename package: test.mysqld -> testing.mysqld
+* Add Mysqld#url() method (for sqlalchemy)
+
 1.0.0 (2013-10-17)
 -------------------
 * First release
