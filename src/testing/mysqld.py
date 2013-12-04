@@ -23,7 +23,7 @@ import subprocess
 from time import sleep
 from shutil import copytree
 
-__all__ = ['Mysqld']
+__all__ = ['Mysqld', 'skipIfNotFound']
 
 SEARCH_PATHS = ['/usr/local/mysql']
 DEFAULT_SETTINGS = dict(auto_start=2,
@@ -239,6 +239,27 @@ class Mysqld(object):
                 return log.read()
         except Exception as exc:
             raise RuntimeError("failed to open file:tmp/mysqld.log: %r" % exc)
+
+
+def skipIfNotFound(arg=None):
+    from unittest import skipIf
+
+    def decorator(fn, path=arg):
+        if path:
+            cond = not os.path.exists(path)
+        else:
+            try:
+                find_program('mysqld', ['bin', 'libexec', 'sbin'])  # raise exception if not found
+                cond = False
+            except:
+                cond = True  # not found
+
+        return skipIf(cond, "MySQL does not found")(fn)
+
+    if callable(arg):  # execute as simple decorator
+        return decorator(arg, None)
+    else:  # execute with path argument
+        return decorator
 
 
 def find_program(name, subdirs):
