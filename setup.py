@@ -16,7 +16,7 @@ classifiers = [
 
 setup(
     name='testing.mysqld',
-    version='1.1.2',
+    version='1.2.0',
     description='automatically setups a mysqld instance in a temporary directory, and destroys it after testing',
     long_description=open('README.rst').read(),
     classifiers=classifiers,

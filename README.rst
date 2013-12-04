@@ -70,6 +70,10 @@ Apache License 2.0
 History
 =======
 
+1.2.0 (2013-12-04)
+-------------------
+* Add @skipIfNotFound decorator
+
 1.1.2 (2013-11-26)
 -------------------
 * Fix it does not cleanup temporary directory if Mysqld object has been deleted
