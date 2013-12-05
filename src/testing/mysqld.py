@@ -241,7 +241,7 @@ class Mysqld(object):
             raise RuntimeError("failed to open file:tmp/mysqld.log: %r" % exc)
 
 
-def skipIfNotFound(arg=None):
+def skipIfNotInstalled(arg=None):
     from unittest import skipIf
 
     def decorator(fn, path=arg):
@@ -260,6 +260,9 @@ def skipIfNotFound(arg=None):
         return decorator(arg, None)
     else:  # execute with path argument
         return decorator
+
+
+skipIfNotFound = skipIfNotInstalled
 
 
 def find_program(name, subdirs):

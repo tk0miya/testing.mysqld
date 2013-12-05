@@ -122,6 +122,50 @@ class TestMysqld(unittest.TestCase):
 
         self.assertEqual(cursor.fetchall(), ((1, 'hello'), (2, 'ciao')))
 
+    def test_skipIfNotInstalled_found(self):
+        try:
+            path = os.environ['PATH']
+            os.environ['PATH'] = '/'
+
+            @testing.mysqld.skipIfNotInstalled
+            def testcase():
+                pass
+
+            self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
+            self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
+            self.assertEqual(True, testcase.__unittest_skip__)
+            self.assertEqual("MySQL does not found", testcase.__unittest_skip_why__)
+        finally:
+            os.environ['PATH'] = path
+
+    def test_skipIfNotInstalled_notfound(self):
+        @testing.mysqld.skipIfNotInstalled
+        def testcase():
+            pass
+
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
+
+    def test_skipIfNotInstalled_with_args_found(self):
+        path = testing.mysqld.find_program('mysqld', ['sbin'])
+
+        @testing.mysqld.skipIfNotInstalled(path)
+        def testcase():
+            pass
+
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
+
+    def test_skipIfNotInstalled_with_args_notfound(self):
+        @testing.mysqld.skipIfNotInstalled("/path/to/anywhere")
+        def testcase():
+            pass
+
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
+        self.assertEqual(True, testcase.__unittest_skip__)
+        self.assertEqual("MySQL does not found", testcase.__unittest_skip_why__)
+
     def test_skipIfNotFound_found(self):
         try:
             path = os.environ['PATH']
@@ -145,23 +189,3 @@ class TestMysqld(unittest.TestCase):
 
         self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
-
-    def test_skipIfNotFound_with_args_found(self):
-        path = testing.mysqld.find_program('mysqld', ['sbin'])
-
-        @testing.mysqld.skipIfNotFound(path)
-        def testcase():
-            pass
-
-        self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
-        self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
-
-    def test_skipIfNotFound_with_args_notfound(self):
-        @testing.mysqld.skipIfNotFound("/path/to/anywhere")
-        def testcase():
-            pass
-
-        self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
-        self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
-        self.assertEqual(True, testcase.__unittest_skip__)
-        self.assertEqual("MySQL does not found", testcase.__unittest_skip_why__)
