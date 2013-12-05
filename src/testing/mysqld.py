@@ -229,6 +229,7 @@ class Mysqld(object):
             pass
 
     def cleanup(self):
+        import os
         from shutil import rmtree
         if self._use_tmpdir and os.path.exists(self.base_dir):
             rmtree(self.base_dir)
