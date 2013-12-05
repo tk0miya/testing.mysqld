@@ -242,7 +242,10 @@ class Mysqld(object):
 
 
 def skipIfNotInstalled(arg=None):
-    from unittest import skipIf
+    if sys.version_info < (2, 7):
+        from unittest2 import skipIf
+    else:
+        from unittest import skipIf
 
     def decorator(fn, path=arg):
         if path:
