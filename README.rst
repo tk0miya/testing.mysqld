@@ -59,7 +59,7 @@ For example, you can setup new MySQL server for each testcases on setUp() method
 
 Requirements
 ============
-* Python 2.7, 3.3
+* Python 2.6, 2.7, 3.2, 3.3
 * pymysql
 
 License
@@ -69,6 +69,11 @@ Apache License 2.0
 
 History
 =======
+
+1.2.1 (2013-12-05)
+-------------------
+* Add mysqld.skipIfNotInstalled decorator (alias of skipIfNotFound)
+* Suport python 2.6 and 3.2
 
 1.2.0 (2013-12-04)
 -------------------
