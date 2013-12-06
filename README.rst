@@ -14,21 +14,22 @@ Usage
 Create MySQL instance using ``testing.mysqld.Mysqld``::
 
   import testing.mysqld
-  mysqld = testing.mysqld.Mysqld()  # Lanuch new MySQL server
-
-  # connect to MySQL
   from sqlalchemy import create_engine
-  engine = create_engine(mysqld.url())
 
-  # if you use mysqldb or other drivers:
-  #   import _mysql
-  #   db = _mysql.connect(**mysqld.dsn())
+  # Lanuch new MySQL server
+  with testing.mysqld.Mysqld() as mysqld:
+      # connect to MySQL
+      engine = create_engine(mysqld.url())
 
-  #
-  # do any tests using MySQL...
-  #
+      # if you use mysqldb or other drivers:
+      #   import _mysql
+      #   db = _mysql.connect(**mysqld.dsn())
 
-  del mysqld                     # Terminate MySQL server
+      #
+      # do any tests using MySQL...
+      #
+
+  # MySQL server is terminated here
 
 
 ``testing.mysqld.Mysqld`` executes ``mysql_install_db`` and ``mysqld`` on instantiation.
@@ -55,6 +56,9 @@ For example, you can setup new MySQL server for each testcases on setUp() method
   class MyTestCase(unittest.TestCase):
       def setUp(self):
           self.mysqld = testing.mysqld.Mysqld(my_cnf={'skip-networking': None})
+
+      def tearDown(self):
+          self.mysqld.stop()
 
 
 Requirements
