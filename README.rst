@@ -74,6 +74,11 @@ Apache License 2.0
 History
 =======
 
+1.2.2 (2013-12-06)
+-------------------
+* Change behavior: Mysqld#stop() cleans workdir
+* Fix caught AttributeError on object deletion
+
 1.2.1 (2013-12-05)
 -------------------
 * Add mysqld.skipIfNotInstalled decorator (alias of skipIfNotFound)
