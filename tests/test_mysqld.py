@@ -71,16 +71,19 @@ class TestMysqld(unittest.TestCase):
         mysqld = testing.mysqld.Mysqld(auto_start=0)
         self.assertEqual({'db': 'test', 'unix_socket': mysqld.my_cnf['socket'], 'user': 'root'},
                          mysqld.dsn())
-        self.assertEqual("mysql://root@localhost/test?unix_socket=%s" % mysqld.my_cnf['socket'],
+        self.assertEqual("mysql+pymysql://root@localhost/test?unix_socket=%s" % mysqld.my_cnf['socket'],
                          mysqld.url())
-        self.assertEqual("mysql://root@localhost/test?unix_socket=%s&charset=utf8" % mysqld.my_cnf['socket'],
+        self.assertEqual("mysql+pymysql://root@localhost/test?unix_socket=%s&charset=utf8" % mysqld.my_cnf['socket'],
                          mysqld.url(charset='utf8'))
+        self.assertEqual("mysql+mysqldb://root@localhost/test?unix_socket=%s" % mysqld.my_cnf['socket'],
+                         mysqld.url(driver='mysqldb'))
 
         mysqld = testing.mysqld.Mysqld(my_cnf={'port': 12345}, auto_start=0)
         self.assertEqual({'db': 'test', 'host': '127.0.0.1', 'port': 12345, 'user': 'root'},
                          mysqld.dsn())
-        self.assertEqual("mysql://root@127.0.0.1:12345/test", mysqld.url())
-        self.assertEqual("mysql://root@127.0.0.1:12345/test?charset=utf8", mysqld.url(charset='utf8'))
+        self.assertEqual("mysql+pymysql://root@127.0.0.1:12345/test", mysqld.url())
+        self.assertEqual("mysql+pymysql://root@127.0.0.1:12345/test?charset=utf8", mysqld.url(charset='utf8'))
+        self.assertEqual("mysql+mysqldb://root@127.0.0.1:12345/test", mysqld.url(driver='mysqldb'))
 
     def test_with_mysql(self):
         with testing.mysqld.Mysqld(my_cnf={'skip-networking': None}) as mysqld:

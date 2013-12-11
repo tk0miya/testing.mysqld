@@ -106,15 +106,17 @@ class Mysqld(object):
     def url(self, **kwargs):
         params = self.dsn(**kwargs)
 
+        driver = params.get('driver', 'pymysql')
+
         if 'port' in params:
-            url = ('mysql://%s@%s:%d/%s' %
-                   (params['user'], params['host'], params['port'], params['db']))
+            url = ('mysql+%s://%s@%s:%d/%s' %
+                   (driver, params['user'], params['host'], params['port'], params['db']))
 
             if 'charset' in params:
                 url += "?charset=%s" % params['charset']
         else:
-            url = ('mysql://%s@localhost/%s?unix_socket=%s' %
-                   (params['user'], params['db'], params['unix_socket']))
+            url = ('mysql+%s://%s@localhost/%s?unix_socket=%s' %
+                   (driver, params['user'], params['db'], params['unix_socket']))
 
             if 'charset' in params:
                 url += "&charset=%s" % params['charset']
