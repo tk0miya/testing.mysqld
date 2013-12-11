@@ -74,6 +74,10 @@ Apache License 2.0
 History
 =======
 
+1.2.3 (2013-12-11)
+-------------------
+* Use pymysql driver as default in Mysqld#url()
+
 1.2.2 (2013-12-06)
 -------------------
 * Change behavior: Mysqld#stop() cleans workdir
