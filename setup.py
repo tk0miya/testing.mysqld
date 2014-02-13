@@ -37,11 +37,8 @@ setup(
     package_data={'': ['buildout.cfg']},
     include_package_data=True,
     install_requires=install_requires,
-    extras_require=dict(
-        test=[
-            'flake8',
-            'nose',
-        ],
-    ),
+    extras_require={
+        'testing': ['nose'],
+    },
     test_suite='nose.collector',
 )
