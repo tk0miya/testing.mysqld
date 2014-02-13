@@ -197,7 +197,9 @@ class Mysqld(object):
             self.pid = pid
 
             # create test database
-            conn = pymysql.connect(**self.dsn())
+            params = self.dsn()
+            del params['db']
+            conn = pymysql.connect(**params)
             conn.query('CREATE DATABASE IF NOT EXISTS test')
             conn.close()
 
