@@ -86,6 +86,10 @@ Apache License 2.0
 History
 =======
 
+1.2.5 (2014-06-11)
+-------------------
+* Fix ImportError if caught SIGINT on py3
+
 1.2.4 (2014-02-13)
 -------------------
 * Fix testing.mysqld.Mysqld#start() fails if mysql_install_db does not create database named "test"
