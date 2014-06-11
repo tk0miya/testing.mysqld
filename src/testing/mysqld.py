@@ -21,7 +21,7 @@ import pymysql
 import tempfile
 import subprocess
 from time import sleep
-from shutil import copytree
+from shutil import copytree, rmtree
 
 __all__ = ['Mysqld', 'skipIfNotFound']
 
@@ -209,7 +209,6 @@ class Mysqld(object):
             self.cleanup()
 
     def terminate(self, _signal=signal.SIGTERM):
-        import os
         if self.pid is None:
             return  # not started
 
@@ -235,8 +234,6 @@ class Mysqld(object):
         if self.pid is not None:
             return  # not started
 
-        import os
-        from shutil import rmtree
         if self._use_tmpdir and os.path.exists(self.base_dir):
             rmtree(self.base_dir)
 
