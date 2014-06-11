@@ -1,5 +1,17 @@
 ``testing.mysqld`` automatically setups a mysqld instance in a temporary directory, and destroys it after testing
 
+.. image:: https://drone.io/bitbucket.org/tk0miya/testing.mysqld/status.png
+   :target: https://drone.io/bitbucket.org/tk0miya/testing.mysqld
+   :alt: drone.io CI build status
+
+.. image:: https://pypip.in/v/testing.mysqld/badge.png
+   :target: https://pypi.python.org/pypi/testing.mysqld/
+   :alt: Latest PyPI version
+
+.. image:: https://pypip.in/d/testing.mysqld/badge.png
+   :target: https://pypi.python.org/pypi/testing.mysqld/
+   :alt: Number of PyPI downloads
+
 Install
 =======
 Use easy_install (or pip)::
