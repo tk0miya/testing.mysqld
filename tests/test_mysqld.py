@@ -8,8 +8,10 @@ else:
 
 import os
 import signal
+import tempfile
 import testing.mysqld
 from time import sleep
+from shutil import rmtree
 import pymysql
 
 
@@ -144,16 +146,27 @@ class TestMysqld(unittest.TestCase):
             os.kill(mysqld.pid, 0)  # process is alive (calling stop() in child is ignored)
 
     def test_copy_data_from(self):
-        data_dir = os.path.join(os.path.dirname(__file__), 'copy-data-from')
-        mysqld = testing.mysqld.Mysqld(my_cnf={'skip-networking': None},
-                                       copy_data_from=data_dir)
+        try:
+            tmpdir = tempfile.mkdtemp()
 
-        # connect to mysql
-        conn = pymysql.connect(**mysqld.dsn())
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM test.hello ORDER BY id')
+            # create new database
+            with testing.mysqld.Mysqld(my_cnf={'skip-networking': None}, base_dir=tmpdir) as mysqld:
+                conn = pymysql.connect(**mysqld.dsn())
+                cursor = conn.cursor()
+                cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
+                cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
+                conn.commit()
 
-        self.assertEqual(cursor.fetchall(), ((1, 'hello'), (2, 'ciao')))
+            # create another database from first one
+            data_dir = os.path.join(tmpdir, 'var')
+            with testing.mysqld.Mysqld(my_cnf={'skip-networking': None}, copy_data_from=data_dir) as mysqld:
+                conn = pymysql.connect(**mysqld.dsn())
+                cursor = conn.cursor()
+                cursor.execute('SELECT * FROM test.hello ORDER BY id')
+
+                self.assertEqual(cursor.fetchall(), ((1, 'hello'), (2, 'ciao')))
+        finally:
+            rmtree(tmpdir)
 
     def test_skipIfNotInstalled_found(self):
         try:
