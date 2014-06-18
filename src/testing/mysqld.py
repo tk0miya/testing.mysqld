@@ -22,6 +22,7 @@ import tempfile
 import subprocess
 from time import sleep
 from shutil import copytree, rmtree
+from datetime import datetime
 
 __all__ = ['Mysqld', 'skipIfNotFound']
 
@@ -218,8 +219,13 @@ class Mysqld(object):
 
         try:
             os.kill(self.pid, _signal)
-            while (os.waitpid(self.pid, 0)):
-                pass
+            killed_at = datetime.now()
+            while (os.waitpid(self.pid, os.WNOHANG)):
+                if (datetime.now() - killed_at).seconds > 10.0:
+                    os.kill(self.pid, signal.SIGKILL)
+                    raise RuntimeError("*** failed to shutdown mysqld (timeout) ***\n" + self.read_log())
+
+                sleep(0.1)
         except:
             pass
 
