@@ -191,7 +191,7 @@ class Mysqld(object):
             logger.close()
 
             while not os.path.exists(self.my_cnf['pid-file']):
-                if os.waitpid(pid, os.WNOHANG) != (0, 0):
+                if os.waitpid(pid, os.WNOHANG)[0] != 0:
                     raise RuntimeError("*** failed to launch mysqld ***\n" + self.read_log())
 
                 sleep(0.1)
