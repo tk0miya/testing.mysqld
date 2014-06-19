@@ -86,6 +86,11 @@ Apache License 2.0
 History
 =======
 
+1.2.6 (2014-06-19)
+-------------------
+* Add timeout on terminating mysqld
+* Fix bugs
+
 1.2.5 (2014-06-11)
 -------------------
 * Fix ImportError if caught SIGINT on py3
