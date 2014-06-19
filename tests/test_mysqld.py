@@ -180,7 +180,7 @@ class TestMysqld(unittest.TestCase):
             self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
             self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
             self.assertEqual(True, testcase.__unittest_skip__)
-            self.assertEqual("MySQL does not found", testcase.__unittest_skip_why__)
+            self.assertEqual("MySQL not found", testcase.__unittest_skip_why__)
         finally:
             os.environ['PATH'] = path
 
@@ -210,7 +210,7 @@ class TestMysqld(unittest.TestCase):
         self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
         self.assertEqual(True, testcase.__unittest_skip__)
-        self.assertEqual("MySQL does not found", testcase.__unittest_skip_why__)
+        self.assertEqual("MySQL not found", testcase.__unittest_skip_why__)
 
     def test_skipIfNotFound_found(self):
         try:
@@ -224,7 +224,7 @@ class TestMysqld(unittest.TestCase):
             self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
             self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
             self.assertEqual(True, testcase.__unittest_skip__)
-            self.assertEqual("MySQL does not found", testcase.__unittest_skip_why__)
+            self.assertEqual("MySQL not found", testcase.__unittest_skip_why__)
         finally:
             os.environ['PATH'] = path
 

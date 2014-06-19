@@ -268,7 +268,7 @@ def skipIfNotInstalled(arg=None):
             except:
                 cond = True  # not found
 
-        return skipIf(cond, "MySQL does not found")(fn)
+        return skipIf(cond, "MySQL not found")(fn)
 
     if callable(arg):  # execute as simple decorator
         return decorator(arg, None)
