@@ -161,7 +161,10 @@ class Mysqld(object):
 
             mysql_base_dir = self.mysql_install_db
             if os.path.islink(mysql_base_dir):
-                mysql_base_dir = os.path.abspath(os.readlink(mysql_base_dir))
+                link = os.readlink(mysql_base_dir)
+                mysql_base_dir = os.path.join(os.path.dirname(mysql_base_dir),
+                                              link)
+                mysql_base_dir = os.path.normpath(mysql_base_dir)
 
             if re.search('[^/]+/mysql_install_db$', mysql_base_dir):
                 args.append("--basedir=%s" % re.sub('[^/]+/mysql_install_db$', '', mysql_base_dir))
