@@ -86,6 +86,15 @@ Apache License 2.0
 History
 =======
 
+1.2.8 (2015-04-06)
+-------------------
+* Fix bugs
+
+1.2.7 (2014-12-20)
+-------------------
+* Support for relative mysql_install_db links
+* Use absolute path for which command
+
 1.2.6 (2014-06-19)
 -------------------
 * Add timeout on terminating mysqld
