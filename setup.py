@@ -38,7 +38,7 @@ setup(
     include_package_data=True,
     install_requires=install_requires,
     extras_require={
-        'testing': ['nose'],
+        'testing': ['nose', 'SQLAlchemy],
     },
     test_suite='nose.collector',
 )
