@@ -1,5 +1,0 @@
-.pyc
-.swp
-^.tox/
-^dist/
-^src/.*.egg-info/
