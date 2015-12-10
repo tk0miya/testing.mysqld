@@ -1,16 +1,13 @@
 ``testing.mysqld`` automatically setups a mysqld instance in a temporary directory, and destroys it after testing
 
-.. image:: https://drone.io/bitbucket.org/tk0miya/testing.mysqld/status.png
-   :target: https://drone.io/bitbucket.org/tk0miya/testing.mysqld
-   :alt: drone.io CI build status
+.. image:: https://travis-ci.org/tk0miya/testing.mysqld.svg?branch=master
+   :target: https://travis-ci.org/tk0miya/testing.mysqld
 
-.. image:: https://pypip.in/v/testing.mysqld/badge.png
-   :target: https://pypi.python.org/pypi/testing.mysqld/
-   :alt: Latest PyPI version
+.. image:: https://coveralls.io/repos/tk0miya/testing.mysqld/badge.png?branch=master
+   :target: https://coveralls.io/r/tk0miya/testing.mysqld?branch=master
 
-.. image:: https://pypip.in/d/testing.mysqld/badge.png
-   :target: https://pypi.python.org/pypi/testing.mysqld/
-   :alt: Number of PyPI downloads
+.. image:: https://codeclimate.com/github/tk0miya/testing.mysqld/badges/gpa.svg
+   :target: https://codeclimate.com/github/tk0miya/testing.mysqld
 
 Install
 =======
