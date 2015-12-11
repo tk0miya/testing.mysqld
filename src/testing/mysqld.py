@@ -180,6 +180,7 @@ class Mysqld(object):
 
         logger = open(os.path.join(self.base_dir, 'tmp', 'mysqld.log'), 'wt')
         pid = os.fork()
+        exec_at = datetime.now()
         if pid == 0:
             os.dup2(logger.fileno(), sys.__stdout__.fileno())
             os.dup2(logger.fileno(), sys.__stderr__.fileno())
@@ -196,6 +197,9 @@ class Mysqld(object):
             while not os.path.exists(self.my_cnf['pid-file']):
                 if os.waitpid(pid, os.WNOHANG)[0] != 0:
                     raise RuntimeError("*** failed to launch mysqld ***\n" + self.read_log())
+
+                if (datetime.now() - exec_at).seconds > 10.0:
+                    raise RuntimeError("*** failed to launch mysqld (timeout) ***\n" + self.read_log())
 
                 sleep(0.1)
 
