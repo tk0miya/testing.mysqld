@@ -151,13 +151,10 @@ class Mysqld(object):
                 else:
                     my_cnf.write("%s\n" % key)
 
-        # mysql_install_db
+        # initialize databse
         if not os.path.exists(os.path.join(self.base_dir, 'var', 'mysql')):
-            args = []
-            args.append(self.mysql_install_db)
-
-            # We should specify --defaults-file option first.
-            args.append("--defaults-file=%s/etc/my.cnf" % self.base_dir)
+            args = ["--defaults-file=%s/etc/my.cnf" % self.base_dir,
+                    "--datadir=%s" % self.my_cnf['datadir']]
 
             mysql_base_dir = self.mysql_install_db
             if os.path.islink(mysql_base_dir):
@@ -170,7 +167,13 @@ class Mysqld(object):
                 args.append("--basedir=%s" % re.sub('[^/]+/mysql_install_db$', '', mysql_base_dir))
 
             try:
-                subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+                mysqld_args = [self.mysqld] + args + ["--initialize-insecure"]
+                mysqld = subprocess.Popen(mysqld_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                mysqld.communicate()
+
+                if mysqld.returncode:  # MySQL < 5.7
+                    install_db_args = [self.mysql_install_db] + args
+                    subprocess.Popen(install_db_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
             except Exception as exc:
                 raise RuntimeError("failed to spawn mysql_install_db: %r" % exc)
 
