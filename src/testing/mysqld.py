@@ -15,76 +15,47 @@
 
 import os
 import re
-import sys
-import signal
 import pymysql
-import tempfile
 import subprocess
-from time import sleep
-from shutil import copytree, rmtree
-from datetime import datetime
+from contextlib import closing
+
+from testing.common.database import (
+    Database, SkipIfNotInstalledDecorator, get_path_of
+)
 
 __all__ = ['Mysqld', 'skipIfNotFound']
 
 SEARCH_PATHS = ['/usr/local/mysql']
-DEFAULT_SETTINGS = dict(auto_start=2,
-                        base_dir=None,
-                        mysql_install_db=None,
-                        mysqld=None,
-                        pid=None,
-                        copy_data_from=None)
 
 
-class Mysqld(object):
-    def __init__(self, **kwargs):
-        self.settings = dict(DEFAULT_SETTINGS)
-        self.settings.update(kwargs)
-        self.pid = None
-        self._owner_pid = os.getpid()
-        self._use_tmpdir = False
+class Mysqld(Database):
+    DEFAULT_SETTINGS = dict(auto_start=2,
+                            base_dir=None,
+                            mysql_install_db=None,
+                            mysqld=None,
+                            pid=None,
+                            port=None,
+                            copy_data_from=None)
+    subdirectories = ['etc', 'var', 'tmp']
 
-        if self.base_dir:
-            if self.base_dir[0] != '/':
-                self.settings['base_dir'] = os.path.join(os.getcwd(), self.base_dir)
-        else:
-            self.settings['base_dir'] = tempfile.mkdtemp()
-            self._use_tmpdir = True
+    def initialize(self):
+        self.my_cnf = self.settings.get('my_cnf', {})
+        self.my_cnf.setdefault('socket', os.path.join(self.base_dir, 'tmp', 'mysql.sock'))
+        self.my_cnf.setdefault('datadir', os.path.join(self.base_dir, 'var'))
+        self.my_cnf.setdefault('pid-file', os.path.join(self.base_dir, 'tmp', 'mysqld.pid'))
+        self.my_cnf.setdefault('tmpdir', os.path.join(self.base_dir, 'tmp'))
 
-        my_cnf = self.settings.setdefault('my_cnf', {})
-        my_cnf.setdefault('socket', os.path.join(self.base_dir, 'tmp', 'mysql.sock'))
-        my_cnf.setdefault('datadir', os.path.join(self.base_dir, 'var'))
-        my_cnf.setdefault('pid-file', os.path.join(self.base_dir, 'tmp', 'mysqld.pid'))
-        my_cnf.setdefault('tmpdir', os.path.join(self.base_dir, 'tmp'))
-
+        self.mysql_install_db = self.settings.get('mysql_install_db')
         if self.mysql_install_db is None:
-            self.settings['mysql_install_db'] = find_program('mysql_install_db', ['bin', 'scripts'])
+            self.mysql_install_db = find_program('mysql_install_db', ['bin', 'scripts'])
 
+        self.mysqld = self.settings.get('mysqld')
         if self.mysqld is None:
-            self.settings['mysqld'] = find_program('mysqld', ['bin', 'libexec', 'sbin'])
+            self.mysqld = find_program('mysqld', ['bin', 'libexec', 'sbin'])
 
-        if self.auto_start:
+        if self.settings['auto_start']:
             if os.path.exists(self.my_cnf['pid-file']):
                 raise RuntimeError('mysqld is already running (%s)' % self.my_cnf['pid-file'])
-
-            if self.auto_start >= 2:
-                self.setup()
-
-            self.start()
-
-    def __del__(self):
-        self.stop()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.stop()
-
-    def __getattr__(self, name):
-        if name in self.settings:
-            return self.settings[name]
-        else:
-            raise AttributeError("'Mysqld' object has no attribute '%s'" % name)
 
     def dsn(self, **kwargs):
         params = dict(kwargs)
@@ -125,23 +96,10 @@ class Mysqld(object):
 
         return url
 
-    def setup(self):
-        # copy data files
-        if self.copy_data_from:
-            try:
-                copytree(self.copy_data_from, self.my_cnf['datadir'])
-            except Exception as exc:
-                raise RuntimeError("could not copytree %s to %s: %r" %
-                                   (self.copy_data_from, self.my_cnf['datadir'], exc))
+    def get_data_directory(self):
+        return self.my_cnf['datadir']
 
-        # (re)create directory structure
-        for subdir in ['etc', 'var', 'tmp']:
-            try:
-                path = os.path.join(self.base_dir, subdir)
-                os.makedirs(path)
-            except:
-                pass
-
+    def initialize_database(self):
         # my.cnf
         with open(os.path.join(self.base_dir, 'etc', 'my.cnf'), 'wt') as my_cnf:
             my_cnf.write("[mysqld]\n")
@@ -177,115 +135,30 @@ class Mysqld(object):
             except Exception as exc:
                 raise RuntimeError("failed to spawn mysql_install_db: %r" % exc)
 
-    def start(self):
-        if self.pid:
-            return  # already started
+    def get_server_commandline(self):
+        return [self.mysqld,
+                '--defaults-file=%s/etc/my.cnf' % self.base_dir,
+                '--user=root']
 
-        logger = open(os.path.join(self.base_dir, 'tmp', 'mysqld.log'), 'wt')
-        pid = os.fork()
-        exec_at = datetime.now()
-        if pid == 0:
-            os.dup2(logger.fileno(), sys.__stdout__.fileno())
-            os.dup2(logger.fileno(), sys.__stderr__.fileno())
+    def is_server_available(self):
+        return os.path.exists(self.my_cnf['pid-file'])
 
-            try:
-                os.execl(self.mysqld, self.mysqld,
-                         '--defaults-file=%s/etc/my.cnf' % self.base_dir,
-                         '--user=root')
-            except Exception as exc:
-                raise RuntimeError('failed to launch mysqld: %r' % exc)
-        else:
-            logger.close()
-
-            while not os.path.exists(self.my_cnf['pid-file']):
-                if os.waitpid(pid, os.WNOHANG)[0] != 0:
-                    raise RuntimeError("*** failed to launch mysqld ***\n" + self.read_log())
-
-                if (datetime.now() - exec_at).seconds > 10.0:
-                    raise RuntimeError("*** failed to launch mysqld (timeout) ***\n" + self.read_log())
-
-                sleep(0.1)
-
-            self.pid = pid
-
-            # create test database
-            params = self.dsn()
-            del params['db']
-            conn = pymysql.connect(**params)
+    def poststart(self):
+        # create test database
+        params = self.dsn()
+        del params['db']
+        with closing(pymysql.connect(**params)) as conn:
             conn.query('CREATE DATABASE IF NOT EXISTS test')
-            conn.close()
-
-    def stop(self, _signal=signal.SIGTERM):
-        self.terminate(_signal)
-        self.cleanup()
-
-    def terminate(self, _signal=signal.SIGTERM):
-        if self.pid is None:
-            return  # not started
-
-        if self._owner_pid != os.getpid():
-            return  # could not stop in child process
-
-        try:
-            os.kill(self.pid, _signal)
-            killed_at = datetime.now()
-            while (os.waitpid(self.pid, os.WNOHANG)):
-                if (datetime.now() - killed_at).seconds > 10.0:
-                    os.kill(self.pid, signal.SIGKILL)
-                    raise RuntimeError("*** failed to shutdown mysqld (timeout) ***\n" + self.read_log())
-
-                sleep(0.1)
-        except:
-            pass
-
-        self.pid = None
-
-        try:
-            # might remain for example when sending SIGKILL
-            os.unlink(self.my_cnf['pid-file'])
-        except:
-            pass
-
-    def cleanup(self):
-        if self.pid is not None:
-            return  # not started
-
-        if self._use_tmpdir and os.path.exists(self.base_dir):
-            rmtree(self.base_dir, ignore_errors=True)
-
-    def read_log(self):
-        try:
-            with open(os.path.join(self.base_dir, 'tmp', 'mysqld.log')) as log:
-                return log.read()
-        except Exception as exc:
-            raise RuntimeError("failed to open file:tmp/mysqld.log: %r" % exc)
 
 
-def skipIfNotInstalled(arg=None):
-    if sys.version_info < (2, 7):
-        from unittest2 import skipIf
-    else:
-        from unittest import skipIf
+class MysqldSkipIfNotInstalledDecorator(SkipIfNotInstalledDecorator):
+    name = 'mysqld'
 
-    def decorator(fn, path=arg):
-        if path:
-            cond = not os.path.exists(path)
-        else:
-            try:
-                find_program('mysqld', ['bin', 'libexec', 'sbin'])  # raise exception if not found
-                cond = False
-            except:
-                cond = True  # not found
-
-        return skipIf(cond, "MySQL not found")(fn)
-
-    if callable(arg):  # execute as simple decorator
-        return decorator(arg, None)
-    else:  # execute with path argument
-        return decorator
+    def search_server(self):
+        find_program('mysqld', ['bin', 'libexec', 'sbin'])
 
 
-skipIfNotFound = skipIfNotInstalled
+skipIfNotFound = skipIfNotInstalled = MysqldSkipIfNotInstalledDecorator()
 
 
 def find_program(name, subdirs):
@@ -304,13 +177,3 @@ def find_program(name, subdirs):
                     return path
 
     raise RuntimeError("command not found: %s" % name)
-
-
-def get_path_of(name):
-    path = subprocess.Popen(['/usr/bin/which', name],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE).communicate()[0]
-    if path:
-        return path.rstrip().decode('utf-8')
-    else:
-        return None

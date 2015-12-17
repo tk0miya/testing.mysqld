@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-install_requires = ['pymysql']
+install_requires = ['testing.common.database', 'pymysql']
 if sys.version_info < (2, 7):
     install_requires.append('unittest2')
 
@@ -40,7 +40,8 @@ setup(
     include_package_data=True,
     install_requires=install_requires,
     extras_require={
-        'testing': ['nose', 'SQLAlchemy'],
+        'testing': ['mock', 'nose', 'SQLAlchemy'],
     },
     test_suite='nose.collector',
+    namespace_packages=['testing'],
 )

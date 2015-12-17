@@ -10,6 +10,7 @@ import os
 import signal
 import tempfile
 import testing.mysqld
+from mock import patch
 from time import sleep
 from shutil import rmtree
 import pymysql
@@ -30,7 +31,7 @@ class TestMysqld(unittest.TestCase):
             # connect to mysql (w/ pymysql)
             conn = pymysql.connect(**mysqld.dsn())
             self.assertIsNotNone(conn)
-            self.assertRegexpMatches(mysqld.read_log(), 'ready for connections')
+            self.assertRegexpMatches(mysqld.read_bootlog(), 'ready for connections')
 
             # connect to mysql (w/ sqlalchemy)
             engine = sqlalchemy.create_engine(mysqld.url())
@@ -116,15 +117,12 @@ class TestMysqld(unittest.TestCase):
         os.kill(mysqld1.pid, 0)  # process is alive
         os.kill(mysqld2.pid, 0)  # process is alive
 
-    def test_mysqld_is_not_found(self):
-        try:
-            path = os.environ['PATH']
-            os.environ['PATH'] = '/usr/bin'
+    @patch("testing.mysqld.find_program")
+    def test_mysqld_is_not_found(self, find_program):
+        find_program.side_effect = RuntimeError
 
-            with self.assertRaises(RuntimeError):
-                testing.mysqld.Mysqld(my_cnf={'skip-networking': None})
-        finally:
-            os.environ['PATH'] = path
+        with self.assertRaises(RuntimeError):
+            testing.mysqld.Mysqld(my_cnf={'skip-networking': None})
 
     def test_fork(self):
         mysqld = testing.mysqld.Mysqld(my_cnf={'skip-networking': None})
@@ -175,28 +173,25 @@ class TestMysqld(unittest.TestCase):
             rmtree(tmpdir)
 
     def test_skipIfNotInstalled_found(self):
-        try:
-            path = os.environ['PATH']
-            os.environ['PATH'] = '/'
-
-            @testing.mysqld.skipIfNotInstalled
-            def testcase():
-                pass
-
-            self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
-            self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
-            self.assertEqual(True, testcase.__unittest_skip__)
-            self.assertEqual("MySQL not found", testcase.__unittest_skip_why__)
-        finally:
-            os.environ['PATH'] = path
-
-    def test_skipIfNotInstalled_notfound(self):
         @testing.mysqld.skipIfNotInstalled
         def testcase():
             pass
 
         self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
+
+    @patch("testing.mysqld.find_program")
+    def test_skipIfNotInstalled_notfound(self, find_program):
+        find_program.side_effect = RuntimeError
+
+        @testing.mysqld.skipIfNotInstalled
+        def testcase():
+            pass
+
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
+        self.assertEqual(True, testcase.__unittest_skip__)
+        self.assertEqual("mysqld not found", testcase.__unittest_skip_why__)
 
     def test_skipIfNotInstalled_with_args_found(self):
         path = testing.mysqld.find_program('mysqld', ['sbin'])
@@ -216,28 +211,25 @@ class TestMysqld(unittest.TestCase):
         self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
         self.assertEqual(True, testcase.__unittest_skip__)
-        self.assertEqual("MySQL not found", testcase.__unittest_skip_why__)
+        self.assertEqual("mysqld not found", testcase.__unittest_skip_why__)
 
     def test_skipIfNotFound_found(self):
-        try:
-            path = os.environ['PATH']
-            os.environ['PATH'] = '/'
-
-            @testing.mysqld.skipIfNotFound
-            def testcase():
-                pass
-
-            self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
-            self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
-            self.assertEqual(True, testcase.__unittest_skip__)
-            self.assertEqual("MySQL not found", testcase.__unittest_skip_why__)
-        finally:
-            os.environ['PATH'] = path
-
-    def test_skipIfNotFound_notfound(self):
         @testing.mysqld.skipIfNotFound
         def testcase():
             pass
 
         self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
+
+    @patch("testing.mysqld.find_program")
+    def test_skipIfNotFound_notfound(self, find_program):
+        find_program.side_effect = RuntimeError
+
+        @testing.mysqld.skipIfNotFound
+        def testcase():
+            pass
+
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
+        self.assertEqual(True, testcase.__unittest_skip__)
+        self.assertEqual("mysqld not found", testcase.__unittest_skip_why__)
