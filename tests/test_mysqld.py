@@ -13,6 +13,7 @@ import testing.mysqld
 from mock import patch
 from time import sleep
 from shutil import rmtree
+from contextlib import closing
 import pymysql
 import sqlalchemy
 
@@ -233,3 +234,35 @@ class TestMysqld(unittest.TestCase):
         self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
         self.assertEqual(True, testcase.__unittest_skip__)
         self.assertEqual("mysqld not found", testcase.__unittest_skip_why__)
+
+    def test_MysqldFactory(self):
+        Mysqld = testing.mysqld.MysqldFactory(cache_initialized_db=True)
+        with Mysqld() as mysqld1:
+            self.assertTrue(mysqld1.settings['copy_data_from'])
+            copy_data_from1 = mysqld1.settings['copy_data_from']
+            self.assertTrue(os.path.exists(copy_data_from1))
+        with Mysqld() as mysqld2:
+            self.assertEqual(copy_data_from1, mysqld2.settings['copy_data_from'])
+        Mysqld.clear_cache()
+        self.assertFalse(os.path.exists(copy_data_from1))
+
+    def test_MysqldFactory_with_initialized_handler(self):
+        def handler(mysqld):
+            conn = pymysql.connect(**mysqld.dsn())
+            with closing(conn.cursor()) as cursor:
+                cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
+                cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
+            conn.commit()
+            conn.close()
+
+        Mysqld = testing.mysqld.MysqldFactory(cache_initialized_db=True,
+                                              on_initialized=handler)
+        try:
+            with Mysqld() as mysqld:
+                conn = pymysql.connect(**mysqld.dsn())
+                with closing(conn.cursor()) as cursor:
+                    cursor.execute('SELECT * FROM hello ORDER BY id')
+                    self.assertEqual(cursor.fetchall(), ((1, 'hello'), (2, 'ciao')))
+                conn.close()
+        finally:
+            Mysqld.clear_cache()

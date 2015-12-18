@@ -20,7 +20,7 @@ import subprocess
 from contextlib import closing
 
 from testing.common.database import (
-    Database, SkipIfNotInstalledDecorator, get_path_of
+    Database, DatabaseFactory, SkipIfNotInstalledDecorator, get_path_of
 )
 
 __all__ = ['Mysqld', 'skipIfNotFound']
@@ -52,10 +52,6 @@ class Mysqld(Database):
         self.mysqld = self.settings.get('mysqld')
         if self.mysqld is None:
             self.mysqld = find_program('mysqld', ['bin', 'libexec', 'sbin'])
-
-        if self.settings['auto_start']:
-            if os.path.exists(self.my_cnf['pid-file']):
-                raise RuntimeError('mysqld is already running (%s)' % self.my_cnf['pid-file'])
 
     def dsn(self, **kwargs):
         params = dict(kwargs)
@@ -149,6 +145,10 @@ class Mysqld(Database):
         del params['db']
         with closing(pymysql.connect(**params)) as conn:
             conn.query('CREATE DATABASE IF NOT EXISTS test')
+
+
+class MysqldFactory(DatabaseFactory):
+    target_class = Mysqld
 
 
 class MysqldSkipIfNotInstalledDecorator(SkipIfNotInstalledDecorator):

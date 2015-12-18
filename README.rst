@@ -70,6 +70,54 @@ For example, you can setup new MySQL server for each testcases on setUp() method
           self.mysqld.stop()
 
 
+To make your tests faster
+-------------------------
+
+``testing.mysqld.Mysqld`` invokes ``initdb`` command on every instantiation.
+That is very simple. But, in many cases, it is very waste that generating brandnew database for each testcase.
+
+To optimize the behavior, use ``testing.mysqld.MysqldFactory``.
+The factory class is able to cache the generated database beyond the testcases,
+and it reduces the number of invocation of ``mysql_install_db`` command::
+
+  import unittest
+  import testing.mysqld
+
+  # Generate Mysqld class which shares the generated database
+  Mysqld = testing.mysqld.MysqldFactory(cache_initialized_db=True)
+
+
+  def tearDownModule(self):
+      # clear cached database at end of tests
+      Mysqld.clear_cache()
+
+
+  class MyTestCase(unittest.TestCase):
+      def setUp(self):
+          # Use the generated Mysqld class instead of testing.mysqld.Mysqld
+          self.mysqld = Mysqld()
+
+      def tearDown(self):
+          self.mysqld.stop()
+
+If you want to insert fixtures to the cached database, use ``initdb_handler`` option::
+
+  # create initial data on create as fixtures into the database
+  def handler(mysqld):
+      conn = psycopg2.connect(**mysqld.dsn())
+      cursor = conn.cursor()
+      cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
+      cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
+      cursor.close()
+      conn.commit()
+      conn.close()
+
+  # Use `handler()` on initialize database
+  Mysqld = testing.mysqld.MysqldFactory(cache_initialized_db=True,
+                                        on_initialized=handler)
+
+
+
 Requirements
 ============
 * Python 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
