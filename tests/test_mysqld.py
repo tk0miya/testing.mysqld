@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-
 import os
+import sys
 import signal
 import tempfile
 import testing.mysqld
@@ -16,6 +11,11 @@ from shutil import rmtree
 from contextlib import closing
 import pymysql
 import sqlalchemy
+
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 class TestMysqld(unittest.TestCase):
