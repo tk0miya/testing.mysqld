@@ -20,7 +20,7 @@ import subprocess
 from contextlib import closing
 
 from testing.common.database import (
-    Database, DatabaseFactory, SkipIfNotInstalledDecorator, get_path_of
+    Database, DatabaseFactory, SkipIfNotInstalledDecorator, get_path_of, get_unused_port
 )
 
 __all__ = ['Mysqld', 'skipIfNotFound']
@@ -96,6 +96,10 @@ class Mysqld(Database):
         return self.my_cnf['datadir']
 
     def initialize_database(self):
+        # assign port if networking not disabled
+        if 'port' not in self.my_cnf and 'skip-networking' not in self.my_cnf:
+            self.my_cnf['port'] = get_unused_port()
+
         # my.cnf
         with open(os.path.join(self.base_dir, 'etc', 'my.cnf'), 'wt') as my_cnf:
             my_cnf.write("[mysqld]\n")
