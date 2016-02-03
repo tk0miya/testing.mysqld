@@ -131,6 +131,14 @@ Apache License 2.0
 History
 =======
 
+1.3.0 (2016-02-03)
+-------------------
+* Add timeout to server invoker
+* Support MySQL-5.7
+* Add testing.mysqld.MysqldFactory
+* Depend on ``testing.common.database`` package
+* Assign port if networking not disabled
+
 1.2.8 (2015-04-06)
 -------------------
 * Fix bugs
