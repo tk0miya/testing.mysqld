@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-install_requires = ['testing.common.database', 'pymysql']
+install_requires = ['testing.common.database >= 1.1.0', 'pymysql']
 if sys.version_info < (2, 7):
     install_requires.append('unittest2')
 
