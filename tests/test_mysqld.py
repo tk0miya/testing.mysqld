@@ -159,6 +159,30 @@ class TestMysqld(unittest.TestCase):
         finally:
             rmtree(tmpdir)
 
+    def test_copy_data_from_with_passwd(self):
+        try:
+            tmpdir = tempfile.mkdtemp()
+
+            # create new database
+            with testing.mysqld.Mysqld(my_cnf={'skip-networking': None}, base_dir=tmpdir) as mysqld:
+                conn = pymysql.connect(**mysqld.dsn())
+                cursor = conn.cursor()
+                cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
+                cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
+                cursor.execute("SET PASSWORD FOR 'root'@'localhost' = PASSWORD('secret'); FLUSH PRIVILEGES;")
+                conn.commit()
+
+            # create another database from first one
+            data_dir = os.path.join(tmpdir, 'var')
+            with testing.mysqld.Mysqld(my_cnf={'skip-networking': None}, copy_data_from=data_dir, passwd="secret") as mysqld:
+                conn = pymysql.connect(**mysqld.dsn())
+                cursor = conn.cursor()
+                cursor.execute('SELECT * FROM test.hello ORDER BY id')
+
+                self.assertEqual(cursor.fetchall(), ((1, 'hello'), (2, 'ciao')))
+        finally:
+            rmtree(tmpdir)
+
     def test_skipIfNotInstalled_found(self):
         @testing.mysqld.skipIfNotInstalled
         def testcase():

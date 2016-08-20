@@ -35,7 +35,9 @@ class Mysqld(Database):
                             mysqld=None,
                             pid=None,
                             port=None,
-                            copy_data_from=None)
+                            copy_data_from=None,
+                            user="root",
+                            passwd=None)
     subdirectories = ['etc', 'var', 'tmp']
 
     def initialize(self):
@@ -67,7 +69,10 @@ class Mysqld(Database):
         else:
             params.setdefault('unix_socket', self.my_cnf['socket'])
 
-        params.setdefault('user', 'root')
+        params.setdefault('user', self.settings.get('user'))
+        passwd = self.settings.get('passwd')
+        if passwd:
+            params.setdefault('passwd', passwd)
         params.setdefault('db', 'test')
 
         return params
