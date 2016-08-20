@@ -120,7 +120,7 @@ If you want to insert fixtures to the cached database, use ``initdb_handler`` op
 
 Requirements
 ============
-* Python 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
+* Python 2.7, 3.3, 3.4, 3.5
 * pymysql
 
 License
@@ -130,6 +130,12 @@ Apache License 2.0
 
 History
 =======
+
+1.4.0 (2016-08-20)
+-------------------
+* Drop py26, py32 support
+* Allow ``user`` and ``password`` argument to connect authorized database
+* Depend on testing.common.database >= 2.0.0
 
 1.3.0 (2016-02-03)
 -------------------
