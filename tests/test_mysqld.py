@@ -174,7 +174,8 @@ class TestMysqld(unittest.TestCase):
 
             # create another database from first one
             data_dir = os.path.join(tmpdir, 'var')
-            with testing.mysqld.Mysqld(my_cnf={'skip-networking': None}, copy_data_from=data_dir, passwd="secret") as mysqld:
+            with testing.mysqld.Mysqld(my_cnf={'skip-networking': None},
+                                       copy_data_from=data_dir, passwd="secret") as mysqld:
                 conn = pymysql.connect(**mysqld.dsn())
                 cursor = conn.cursor()
                 cursor.execute('SELECT * FROM test.hello ORDER BY id')
