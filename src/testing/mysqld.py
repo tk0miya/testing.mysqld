@@ -142,8 +142,7 @@ class Mysqld(Database):
 
     def get_server_commandline(self):
         return [self.mysqld,
-                '--defaults-file=%s/etc/my.cnf' % self.base_dir,
-                '--user=root']
+                '--defaults-file=%s/etc/my.cnf' % self.base_dir]
 
     def is_server_available(self):
         return os.path.exists(self.my_cnf['pid-file'])
