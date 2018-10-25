@@ -169,7 +169,8 @@ class TestMysqld(unittest.TestCase):
                 cursor = conn.cursor()
                 cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
                 cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
-                cursor.execute("SET PASSWORD FOR 'root'@'localhost' = PASSWORD('secret'); FLUSH PRIVILEGES;")
+                cursor.execute("ALTER USER 'root'@'localhost' IDENTIFIED BY 'secret'")
+                cursor.execute("FLUSH PRIVILEGES")
                 conn.commit()
 
             # create another database from first one
