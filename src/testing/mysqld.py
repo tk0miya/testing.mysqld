@@ -49,7 +49,10 @@ class Mysqld(Database):
 
         self.mysql_install_db = self.settings.get('mysql_install_db')
         if self.mysql_install_db is None:
-            self.mysql_install_db = find_program('mysql_install_db', ['bin', 'scripts'])
+            try:
+                self.mysql_install_db = find_program('mysql_install_db', ['bin', 'scripts'])
+            except RuntimeError:
+                pass
 
         self.mysqld = self.settings.get('mysqld')
         if self.mysqld is None:
@@ -119,15 +122,15 @@ class Mysqld(Database):
             args = ["--defaults-file=%s/etc/my.cnf" % self.base_dir,
                     "--datadir=%s" % self.my_cnf['datadir']]
 
-            mysql_base_dir = self.mysql_install_db
+            mysql_base_dir = self.mysqld
             if os.path.islink(mysql_base_dir):
                 link = os.readlink(mysql_base_dir)
                 mysql_base_dir = os.path.join(os.path.dirname(mysql_base_dir),
                                               link)
                 mysql_base_dir = os.path.normpath(mysql_base_dir)
 
-            if re.search('[^/]+/mysql_install_db$', mysql_base_dir):
-                args.append("--basedir=%s" % re.sub('[^/]+/mysql_install_db$', '', mysql_base_dir))
+            if re.search('[^/]+/mysqld$', mysql_base_dir):
+                args.append("--basedir=%s" % re.sub('[^/]+/mysqld$', '', mysql_base_dir))
 
             try:
                 mysqld_args = [self.mysqld] + args + ["--initialize-insecure"]
