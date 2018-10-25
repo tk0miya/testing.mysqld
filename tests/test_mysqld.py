@@ -32,7 +32,7 @@ class TestMysqld(unittest.TestCase):
             # connect to mysql (w/ pymysql)
             conn = pymysql.connect(**mysqld.dsn())
             self.assertIsNotNone(conn)
-            self.assertRegexpMatches(mysqld.read_bootlog(), 'ready for connections')
+            self.assertRegex(mysqld.read_bootlog(), 'ready for connections')
 
             # connect to mysql (w/ sqlalchemy)
             engine = sqlalchemy.create_engine(mysqld.url())
