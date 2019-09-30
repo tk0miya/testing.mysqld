@@ -104,7 +104,7 @@ If you want to insert fixtures to the cached database, use ``initdb_handler`` op
 
   # create initial data on create as fixtures into the database
   def handler(mysqld):
-      conn = psycopg2.connect(**mysqld.dsn())
+      conn = MySQLdb.connect(**mysqld.dsn())
       cursor = conn.cursor()
       cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
       cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
