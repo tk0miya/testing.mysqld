@@ -17,6 +17,7 @@ import os
 import re
 import pymysql
 import subprocess
+import copy
 from contextlib import closing
 
 from testing.common.database import (
@@ -41,7 +42,8 @@ class Mysqld(Database):
     subdirectories = ['etc', 'var', 'tmp']
 
     def initialize(self):
-        self.my_cnf = self.settings.get('my_cnf', {})
+        my_cnf_ref = self.settings.get('my_cnf', {})
+        self.my_cnf = copy.deepcopy(my_cnf_ref)
         self.my_cnf.setdefault('socket', os.path.join(self.base_dir, 'tmp', 'mysql.sock'))
         self.my_cnf.setdefault('datadir', os.path.join(self.base_dir, 'var'))
         self.my_cnf.setdefault('pid-file', os.path.join(self.base_dir, 'tmp', 'mysqld.pid'))
